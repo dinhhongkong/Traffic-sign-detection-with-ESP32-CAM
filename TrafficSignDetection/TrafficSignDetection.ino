@@ -303,14 +303,6 @@ void setup() {
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
 
-  // xTaskCreate(
-  //   TaskBlink
-  //   ,  "Task Blink" // A name just for humans
-  //   ,  4096        // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
-  //   ,  (void*) &blink_delay // Task parameter which can modify the task behavior. This must be passed as pointer to void.
-  //   ,  2  // Priority
-  //   ,  NULL // Task handle is not used here - simply pass NULL
-  //   );
 
   xTaskCreatePinnedToCore(
     TaskBlink
