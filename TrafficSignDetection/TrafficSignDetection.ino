@@ -184,7 +184,7 @@ const char* indexAns[] = {
 
 // Function to print prediction result
 void printResult() {
-  Serial.println("Task printResult: ");
+
   // Get output tensor
   TfLiteTensor* outputTensor = interpreter->output(0);
   
@@ -320,7 +320,7 @@ void setup() {
     ,  "Analog Read"
     ,  2048  // Stack size
     ,  NULL  // When no parameter is used, simply pass NULL
-    ,  1  // Priority
+    ,  2  // Priority
     ,  NULL  // With task handle we will be able to manipulate with this task.
     ,  1 // Core on which the task will run
     );
