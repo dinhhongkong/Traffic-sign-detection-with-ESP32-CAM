@@ -15,7 +15,7 @@
 
 #include "bbgt_model.h"
 
-const float detectionThreshold = 0.8;
+const float detectionThreshold = 0.4;
 
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1
@@ -184,6 +184,7 @@ const char* indexAns[] = {
 
 // Function to print prediction result
 void printResult() {
+  Serial.println("Task printResult: ");
   // Get output tensor
   TfLiteTensor* outputTensor = interpreter->output(0);
   
@@ -207,6 +208,9 @@ void printResult() {
     Serial.println(classNames[predictedClass]);
     Serial.print("Probability: ");
     Serial.println(maxProbability);
+    for (uint8_t i = 0; i < webSocket.connectedClients(); ++i) {
+      webSocket.sendTXT(i, indexAns[predictedClass]);
+    }
   }
 }
 
@@ -299,14 +303,24 @@ void setup() {
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
 
-  xTaskCreate(
+  // xTaskCreate(
+  //   TaskBlink
+  //   ,  "Task Blink" // A name just for humans
+  //   ,  4096        // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
+  //   ,  (void*) &blink_delay // Task parameter which can modify the task behavior. This must be passed as pointer to void.
+  //   ,  2  // Priority
+  //   ,  NULL // Task handle is not used here - simply pass NULL
+  //   );
+
+  xTaskCreatePinnedToCore(
     TaskBlink
     ,  "Task Blink" // A name just for humans
     ,  4096        // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
-    ,  (void*) &blink_delay // Task parameter which can modify the task behavior. This must be passed as pointer to void.
-    ,  2  // Priority
+    , (void*) &blink_delay // Task parameter which can modify the task behavior. This must be passed as pointer to void.
+    ,  3  // Priority
     ,  NULL // Task handle is not used here - simply pass NULL
-    );
+    , 0
+    );  
 
   // This variant of task creation can also specify on which core it will be run (only relevant for multi-core ESPs)
   xTaskCreatePinnedToCore(
@@ -315,17 +329,18 @@ void setup() {
     ,  2048  // Stack size
     ,  NULL  // When no parameter is used, simply pass NULL
     ,  1  // Priority
-    , &analog_read_task_handle  // With task handle we will be able to manipulate with this task.
-    ,  ARDUINO_RUNNING_CORE // Core on which the task will run
+    ,  NULL  // With task handle we will be able to manipulate with this task.
+    ,  1 // Core on which the task will run
     );
 
   xTaskCreatePinnedToCore(
     TaskRunServerSocket
-    ,  "Task RunServerSocket" // A name just for humans
+    ,  "Run ServerSocket" // A name just for humans
     ,  2048        // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
-    ,  (void*) &blink_delay // Task parameter which can modify the task behavior. This must be passed as pointer to void.
-    ,  1  // Priority
+    ,  NULL // Task parameter which can modify the task behavior. This must be passed as pointer to void.
+    ,  2  // Priority
     ,  NULL // Task handle is not used here - simply pass NULL
+    ,  1
     );  
 
 
@@ -391,7 +406,7 @@ void TaskBlink(void *pvParameters){  // This is a task.
     Serial.println(". ");
     Serial.println(".. ");
     Serial.println();
-   Serial.println();
+    Serial.println();
 
   // Cleanup
     esp_camera_fb_return(fb);
@@ -401,7 +416,8 @@ void TaskBlink(void *pvParameters){  // This is a task.
 //Serial.print("Remaining stack space: ");
 //Serial.println(stackRemaining);
 
-    delay(3000);
+    // delay(3000);
+    vTaskDelay(3000);
 
   }
 
@@ -417,7 +433,7 @@ void TaskAnalogRead(void *pvParameters){  // This is a task.
 }
 
 void TaskRunServerSocket(void *pvParameters){ 
-   // This is a task.
+  (void) pvParameters;
   while(true) {
     webSocket.loop(); 
   }
