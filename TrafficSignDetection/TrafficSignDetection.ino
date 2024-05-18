@@ -43,7 +43,7 @@ const char* classNames[] = {
   "Cong trinh dang thi cong"
 };
 
-const char* indexAns[] = {
+const String indexAns[] = {
   "0","1","2"
 };
 
@@ -76,7 +76,7 @@ void printResult() {
 
     // send Multicast
     for (uint8_t i = 0; i < webSocket.connectedClients(); ++i) {
-      webSocket.sendTXT(i, indexAns[predictedClass]);
+      webSocket.sendTXT(i, indexAns[predictedClass] + " Probability: " + String(maxProbability * 100, 2) );
     }
   }
 }
