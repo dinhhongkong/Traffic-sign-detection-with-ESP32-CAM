@@ -13,7 +13,7 @@
 
 #include "bbgt_model.h"
 
-const float detectionThreshold = 0.4;
+const float detectionThreshold = 0.7;
 
 // Define two tasks for Blink & AnalogRead.
 void TaskBlink( void *pvParameters );
